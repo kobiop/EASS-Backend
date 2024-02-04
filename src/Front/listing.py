@@ -2,73 +2,61 @@ import streamlit as st
 import requests
 
 # Function to fetch data from the "/listings" endpoint
-def get_listings():
-    url = "http://localhost:8000/listings"  # Replace with the actual URL of your FastAPI app
+def get_listings(page_number, items_per_page):
+    url = f"http://localhost:8000/listings?page={page_number}&per_page={items_per_page}"  # Replace with the actual URL of your FastAPI app
     response = requests.get(url)
     return response.json()
 
-# Custom CSS styles
-custom_styles = """
-    body {
-        background-color: #f4f4f4;
-        font-family: 'Arial', sans-serif;
-    }
-    .streamlit-title {
-        color: #333333;
-    }
-    .streamlit-markdown-text-container {
-        color: #555555;
-    }
-    .pagination-bar {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-    .pagination-item {
-        margin: 0 10px;
-        cursor: pointer;
-    }
-"""
 
 # Streamlit app
 def main():
-    # Apply custom styles
-    st.markdown(f'<style>{custom_styles}</style>', unsafe_allow_html=True)
+    # Page configurations
+    st.set_page_config(
+        page_title="Listings Page",
+        page_icon=":house:",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
 
-    st.title("Apartment Listings")
+    # Sidebar - Navigation Bar
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Go to", ["Home", "Listings", "About"])
 
-    # Fetch data from the "/listings" endpoint
-    all_listings = get_listings()
+    if page == "Home":
+        st.title("Welcome to the Home Page")
+        st.write("This is the home page content.")
 
-    # Paginate the listings with 9 listings per page
-    items_per_page = 9
-    total_pages = (len(all_listings) // items_per_page) + 1
-    current_page = st.session_state.get("current_page", 1)
+    elif page == "Listings":
+        st.title("Listings Page")
 
-    # Display the data in a 3x3 grid using styled cards
-    columns = st.columns(3)  # Create three columns
+        # Settings for pagination
+        current_page = st.sidebar.number_input("Current Page", value=1, min_value=1)
+        items_per_page = st.sidebar.number_input("Items Per Page", value=10, min_value=1, max_value=100)
 
-    for i, listing in enumerate(all_listings[(current_page - 1) * items_per_page : current_page * items_per_page]):
-        # Display each listing as a card in the grid
-        with columns[i % 3]:
-            st.markdown(
-                f"**Apartment {listing['id']}**\n\n"
-                f"**Address:** {listing['address']}\n"
-                f"**Price:** ${listing['price']}\n"
-                f"**Bedrooms:** {listing['beds']}\n"
-                f"**Bathrooms:** {listing['bathrooms']}\n"
-                f"**Area:** {listing['sqft']} sq. ft."
-            )
+        # Get listings
+        all_listings = get_listings(current_page, items_per_page)
 
-    # Pagination bar below the apartments
-    st.markdown('<div class="pagination-bar">', unsafe_allow_html=True)
-    for page in range(1, total_pages + 1):
-        button_clicked = st.button(f"Page {page}", key=f"button_{page}")
-        if button_clicked:
-            st.session_state["current_page"] = page
-    st.markdown('</div>', unsafe_allow_html=True)
+        # Render listings
+        for listing in all_listings:
+            st.write(listing)
+
+        # Pagination
+        st.sidebar.write("Page Navigation")
+        st.sidebar.write(f"Current Page: {current_page}")
+        st.sidebar.write(f"Total Items: {len(all_listings)}")
+
+    elif page == "About":
+        st.title("About Us")
+        st.write("This is the about page content.")
+
+    # Footer
+    st.markdown(
+        """
+        ---\n
+        © 2024 Your Company. All rights reserved.\n
+        Contact us: contact@yourcompany.com
+        """
+    )
 
 if __name__ == "__main__":
     main()

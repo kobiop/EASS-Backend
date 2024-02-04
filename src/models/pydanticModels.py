@@ -18,20 +18,20 @@ class ApartmentDetails(BaseModel):
     img_link: str = Field(default="No Pic")
     created_at: str = Field(default="No Date")
 
+from pydantic import BaseModel, Field
 
 class ApartmentsObject(BaseModel):
-    price: float
-    year_built: int
-    sqft: int
-    beds: int
-    bathrooms: int
-    property_type: str
-    garage: int
-    HOA_fees: float
-    address: str
-    sqft_lot: int
-    img_link: str
-
+    price: float = Field(..., description="Price")
+    year_built: int = Field(..., description="Year built")
+    sqft: int = Field(..., description="Square footage")
+    beds: int = Field(..., description="Number of bedrooms")
+    bathrooms: int = Field(..., description="Number of bathrooms")
+    property_type: str = Field(..., description="Property type")
+    garage: int = Field(..., description="Number of garage spaces")
+    HOA_fees: float = Field(..., description="HOA fees")
+    address: str = Field(..., description="Address")
+    sqft_lot: int = Field(..., description="Square footage of the lot")
+    img_link: str = Field(..., description="Image link")
 
 
 class PropertyType(str, Enum):

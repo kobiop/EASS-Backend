@@ -1,7 +1,7 @@
 
 from fastapi import HTTPException
 from sqlalchemy import create_engine, text
-from pydanticModels import ApartmentDetails,ApartmentSearchForm
+from src.models.pydanticModels import ApartmentDetails,ApartmentSearchForm
 def ConnectDB():
     DATABASE_URL = "mysql+mysqlconnector://root:root@localhost:3307/EASS_PROJECT"
     engine = create_engine(DATABASE_URL)
@@ -43,7 +43,6 @@ def generate_dynamic_query(searchfrom):
     if searchfrom['property_type']:
         property_types_values = [property_type.value for property_type in searchfrom['property_type']]
         if property_types_values:
-            # Generate the IN clause dynamically
             property_types_in_clause = ', '.join([':pt{}'.format(i) for i in range(len(property_types_values))])
             base_query += f" AND property_type IN ({property_types_in_clause})"
             params.update({f'pt{i}': val for i, val in enumerate(property_types_values)})
@@ -69,7 +68,7 @@ def userFilter(search_input):
         with engine.connect() as conn:
             result = conn.execute(query.bindparams(**params))
         apartments = [apartment._asdict() for apartment in result.all()]
-        print(apartments)
+
         return apartments
 
 def SelectAllApartments():
@@ -108,8 +107,7 @@ apartmetns=SelectAllApartments()
 
 def insertNewApartmentToDB(newApartments):
     engine = ConnectDB()
-    query = text(
-            "INSERT INTO EASS_PROJECT.apartments (address, price, beds, garage, bathrooms, property_type, year_built, img_link, sqft, sqft_lot, HOA_fees) VALUES (:address, :price, :beds, :garage ,:bathrooms, :property_type, :year_built, :img_link, :sqft, :sqft_lot, :HOA_fees)")
+    query = text("INSERT INTO EASS_PROJECT.apartments (address, price, beds, garage, bathrooms, property_type, year_built, img_link, sqft, sqft_lot, HOA_fees) VALUES (:address, :price, :beds, :garage ,:bathrooms, :property_type, :year_built, :img_link, :sqft, :sqft_lot, :HOA_fees)")
     params={}
     params['address']=newApartments['address']
     params['price']=newApartments['price']
@@ -128,18 +126,6 @@ def insertNewApartmentToDB(newApartments):
             conn.commit()
         except Exception as e:
             print(f"Error: {e}")
-            conn.rollback()  # Roll back the transaction in case of an error
-    print(query)
-
-     
-     
-    
+            conn.rollback()  
     return newApartments
 
-def newone():
-    query = text(
-            """INSERT INTO EASS_PROJECT.apartments (address, price, beds, garage, bathrooms, property_type, year_built, img_link, sqft, sqft_lot, HOA_fees) VALUES
-               (:address, :price, :beds, :garage ,:bathrooms, :property_type, :year_built, :image, :sqft, :sqft_lot, :HOA_fees)""")
-    params={'price': 1.0, 'year_built': 2, 'sqft': 3, 'beds': 4, 'bathrooms': 5, 'property_type': 'house', 'garage': 2, 'HOA_fees': 150.0, 'address': 'kobi road', 'sqft_lot': 1120, 'image': 'example'}
-    with engine.connect() as conn: 
-        conn.execute(query.bindparams(**params))
