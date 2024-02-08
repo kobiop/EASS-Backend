@@ -2,7 +2,7 @@
 from fastapi import HTTPException
 from sqlalchemy import create_engine, text
 from src.models.pydanticModels import ApartmentDetails,ApartmentSearchForm
-def ConnectDB():
+def connect_db():
     DATABASE_URL = "mysql+mysqlconnector://root:root@localhost:3307/EASS_PROJECT"
     engine = create_engine(DATABASE_URL)
     return engine
@@ -61,9 +61,9 @@ def generate_dynamic_query(searchfrom):
 
     return base_query, params
 
-def userFilter(search_input):
+def filter_apartments_by_user(search_input):
         base_query,params=generate_dynamic_query(search_input)
-        engine=ConnectDB()
+        engine=connect_db()
         query = text(base_query)
         with engine.connect() as conn:
             result = conn.execute(query.bindparams(**params))
@@ -71,8 +71,8 @@ def userFilter(search_input):
 
         return apartments
 
-def SelectAllApartments():
-    engine = ConnectDB()
+def get_all_apartments():
+    engine = connect_db()
     query = text("select * from EASS_PROJECT.apartments")
     with engine.connect() as conn:
         result = conn.execute(query)
@@ -102,24 +102,14 @@ def SelectAllApartments():
         apartment_details_list.append(apartment_details)
     return apartment_details_list
     
-engine=ConnectDB()
-apartmetns=SelectAllApartments()
+engine=connect_db()
+apartmetns=get_all_apartments()
 
-def insertNewApartmentToDB(newApartments):
-    engine = ConnectDB()
+def insert_new_apartment(new_apartments):
+    engine = connect_db()
     query = text("INSERT INTO EASS_PROJECT.apartments (address, price, beds, garage, bathrooms, property_type, year_built, img_link, sqft, sqft_lot, HOA_fees) VALUES (:address, :price, :beds, :garage ,:bathrooms, :property_type, :year_built, :img_link, :sqft, :sqft_lot, :HOA_fees)")
-    params={}
-    params['address']=newApartments['address']
-    params['price']=newApartments['price']
-    params['beds']=newApartments['beds']
-    params['bathrooms']=newApartments['bathrooms']
-    params['property_type']=newApartments['property_type']
-    params['year_built']=newApartments['year_built']
-    params['img_link']=newApartments['img_link']
-    params['sqft']=newApartments['sqft']
-    params['sqft_lot']=newApartments['sqft_lot']
-    params['HOA_fees']=newApartments['HOA_fees'] 
-    params['garage']=newApartments['garage'] 
+    params = {key: new_apartments[key] for key in ['address', 'price', 'beds', 'garage', 'bathrooms', 'property_type', 'year_built', 'img_link', 'sqft', 'sqft_lot', 'HOA_fees']}
+
     with engine.connect() as conn: 
         try:
             conn.execute(query.bindparams(**params))
@@ -127,5 +117,7 @@ def insertNewApartmentToDB(newApartments):
         except Exception as e:
             print(f"Error: {e}")
             conn.rollback()  
-    return newApartments
+            raise HTTPException(status_code=500, detail="Failed to insert new apartment")
+
+    return new_apartments
 
