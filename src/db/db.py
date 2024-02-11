@@ -1,14 +1,19 @@
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine
-from src.models.pydanticModels import Apartment
 from sqlalchemy.orm import sessionmaker
+from src.models.pydanticModels import Apartment
+import logging
+
+logger = logging.getLogger(__name__)
+
+app = FastAPI()
 
 def connect_db():
     DATABASE_URL = "mysql+mysqlconnector://root:root@localhost:3307/EASS_PROJECT"
-    engine = create_engine(DATABASE_URL)
+    engine = create_engine(DATABASE_URL, pool_pre_ping=True)
     return engine
 
-def generate_dynamic_query(searchfrom,engine):
+def generate_dynamic_query(searchfrom, engine):
     Session = sessionmaker(bind=engine)
     with Session() as session:
         base_query = session.query(Apartment).filter()
@@ -43,48 +48,57 @@ def generate_dynamic_query(searchfrom,engine):
             base_query = base_query.filter(Apartment.address.like(f"%{searchfrom['address']}%"))
         if searchfrom['min_sqft_lot']:
             base_query = base_query.filter(Apartment.sqft_lot >= searchfrom['min_sqft_lot'])
-        apartments= base_query.all()
-
+        apartments = base_query.all()
 
     return apartments
 
 def filter_apartments_by_user(search_input):
-        engine=connect_db()
-        apartments = generate_dynamic_query(search_input,engine)
+    engine = connect_db()
+    try:
+        apartments = generate_dynamic_query(search_input, engine)
         if not apartments:
             raise HTTPException(status_code=404, detail="No apartments found")
         return [apartment.__dict__ for apartment in apartments]
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 def get_all_apartments():
     engine = connect_db()
-    Session = sessionmaker(bind=engine)
-    with Session() as session:
-        apartments = session.query(Apartment).all()
-    if not apartments:
-        raise HTTPException(status_code=404, detail="No apartments found")
+    try:
+        Session = sessionmaker(bind=engine)
+        with Session() as session:
+            apartments = session.query(Apartment).all()
+        if not apartments:
+            raise HTTPException(status_code=404, detail="No apartments found")
 
-    return [apartment.__dict__ for apartment in apartments]
-    
+        return [apartment.__dict__ for apartment in apartments]
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 def insert_new_apartment(new_apartments):
     try:
         engine = connect_db()
         Session = sessionmaker(bind=engine)
         with Session() as session:
-            new_apartment_instance =Apartment(**new_apartments)
-            session.add(new_apartment_instance )
-
+            new_apartment_instance = Apartment(**new_apartments)
+            session.add(new_apartment_instance)
             session.commit()
         return new_apartments
     except Exception as e:
-        print(f"Error: {e}")
-        raise HTTPException(status_code=500,detail="Failed to insert new apartment")
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to insert new apartment")
 
 def bring_last():
-    engine=connect_db()
-    Session=sessionmaker(bind=engine)
-    with Session()as session:
-        last_apartment= session.query(Apartment).order_by(Apartment.id.desc()).first()
-    if not last_apartment:
-        raise HTTPException(status_code=404, detail="No apartments found")
-    return last_apartment
+    engine = connect_db()
+    try:
+        Session = sessionmaker(bind=engine)
+        with Session() as session:
+            last_apartment = session.query(Apartment).order_by(Apartment.id.desc()).first()
+        if not last_apartment:
+            raise HTTPException(status_code=404, detail="No apartments found")
+        return last_apartment
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
