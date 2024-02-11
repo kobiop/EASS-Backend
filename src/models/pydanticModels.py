@@ -1,44 +1,49 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from enum import Enum
 from typing import Set, Optional
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, Float, String, Text, DateTime
+from sqlalchemy.sql import func
 
-class ApartmentDetails(BaseModel):
-    id : int = Field(default=1)
-    price: float = Field(default=0.0)
-    year_built: int = Field(default=0)
-    sqft: int = Field(default=0)
-    beds: int = Field(default=0)
-    bathrooms: int = Field(default=0)
-    price_per_sqft: float = Field(default=0.0)
-    property_type: str = Field(default="")
-    garage: int = Field(default=0)
-    HOA_fees: float = Field(default=0.0)
-    address: str = Field(default="No Adress")
-    sqft_lot: int = Field(default=0)
-    img_link: str = Field(default="No Pic")
-    created_at: str = Field(default="No Date")
+Base = declarative_base()
+class Apartment(Base):
+    __tablename__ = 'apartments'
+    id = Column(Integer, primary_key=True)
+    price = Column(Float)
+    year_built = Column(Integer)
+    sqft = Column(Integer)
+    beds = Column(Integer)
+    bathrooms = Column(Integer)
+    price_per_sqft = Column(Float)
+    property_type = Column(String)
+    garage = Column(Integer)
+    HOA_fees = Column(Float)
+    address = Column(Text)
+    sqft_lot = Column(Integer)
+    img_link = Column(Text)
+    created_at = Column(DateTime, default=func.now())
 
-from pydantic import BaseModel, Field
-
-class ApartmentsObject(BaseModel):
-    price: float = Field(..., description="Price")
-    year_built: int = Field(..., description="Year built")
-    sqft: int = Field(..., description="Square footage")
-    beds: int = Field(..., description="Number of bedrooms")
-    bathrooms: int = Field(..., description="Number of bathrooms")
-    property_type: str = Field(..., description="Property type")
-    garage: int = Field(..., description="Number of garage spaces")
-    HOA_fees: float = Field(..., description="HOA fees")
-    address: str = Field(..., description="Address")
-    sqft_lot: int = Field(..., description="Square footage of the lot")
-    img_link: str = Field(..., description="Image link")
-
+class ApartmentAdd(BaseModel):
+    price: float
+    year_built: int
+    sqft: int
+    beds: int
+    bathrooms: int
+    price_per_sqft: float
+    property_type: str
+    garage: int
+    HOA_fees: float
+    address: str
+    sqft_lot: int
+    img_link: str
 
 class PropertyType(str, Enum):
-    house = "house"
-    apartment = "apartment"
+    single_family = "Single family"
+    multi_family = "Multi-Family"
     condo = "condo"
-    townhouse = "townhouse"
+    land = "Land"
+    apartment = "apartment"
+    house = "house"
 
 class ApartmentSearchForm(BaseModel):
     min_price: float = None
@@ -51,8 +56,8 @@ class ApartmentSearchForm(BaseModel):
     min_bathrooms: float = None
     max_bathrooms: float = None
     min_price_per_sqft: float = None
-    property_type: Optional[Set[PropertyType]] = None  # Allow a set of PropertyType or None
+    property_type: Optional[Set[PropertyType]] = None  
     min_garage: int = None
-    max_HOA_fees: float = None  # Adjust as needed
+    max_HOA_fees: float = None  
     address: str = None
     min_sqft_lot: int = None
