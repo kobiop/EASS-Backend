@@ -1,12 +1,39 @@
-version: "3"
+version: '3.8'
 
 services:
-  web:
-    build: .
-    command: sh -c "uvicorn main:app --reload --port=8000 --host=0.0.0.0"
-    env_file:
-      - .env
+  mysql:
+    container_name: mysql
+    build:
+      context: ./mysql
+      dockerfile: mysql.Dockerfile
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
     ports:
-      - 8000:8000
+      - "3307:3306"  
     volumes:
-      - .:/app
+      - my-db:/var/lib/mysql
+      - ./mysql/db:/docker-entrypoint-initdb.d
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: backend.Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: frontend.Dockerfile
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+volumes:
+  my-db:

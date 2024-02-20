@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from src.models.pydanticModels import Apartment
+from .pydanticModels import Apartment
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 def connect_db():
-    DATABASE_URL = "mysql+mysqlconnector://root:root@localhost:3307/EASS_PROJECT"
+    DATABASE_URL = "mysql+mysqlconnector://user:password@mysql/db"
     engine = create_engine(DATABASE_URL, pool_pre_ping=True)
     return engine
 
@@ -65,13 +65,12 @@ def filter_apartments_by_user(search_input):
 
 def get_all_apartments():
     engine = connect_db()
+    Session = sessionmaker(bind=engine)
     try:
-        Session = sessionmaker(bind=engine)
         with Session() as session:
             apartments = session.query(Apartment).all()
         if not apartments:
             raise HTTPException(status_code=404, detail="No apartments found")
-
         return [apartment.__dict__ for apartment in apartments]
     except Exception as e:
         logger.error(f"Error: {e}")
