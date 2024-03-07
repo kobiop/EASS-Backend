@@ -1,19 +1,28 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .pydanticModels import Apartment
+from .pydanticModels import Apartment,convert_to_apartment_response
 import logging
+from dotenv import load_dotenv
+import os
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+load_dotenv()
+
 
 def connect_db():
-    DATABASE_URL = "mysql+mysqlconnector://user:password@mysql/db"
+    DB_USER = os.getenv("DB_USER")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
+    DB_HOST = os.getenv("DB_HOST")
+    DB_NAME = os.getenv("DB_NAME")
+
+    DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
     engine = create_engine(DATABASE_URL, pool_pre_ping=True)
     return engine
 
 def generate_dynamic_query(searchfrom, engine):
+    print("this is the searchfrom ,",searchfrom)
     Session = sessionmaker(bind=engine)
     with Session() as session:
         base_query = session.query(Apartment).filter()
@@ -47,6 +56,7 @@ def generate_dynamic_query(searchfrom, engine):
         if searchfrom['address']:
             base_query = base_query.filter(Apartment.address.like(f"%{searchfrom['address']}%"))
         if searchfrom['min_sqft_lot']:
+            print("enter min sqft lot")
             base_query = base_query.filter(Apartment.sqft_lot >= searchfrom['min_sqft_lot'])
         apartments = base_query.all()
 
@@ -58,7 +68,7 @@ def filter_apartments_by_user(search_input):
         apartments = generate_dynamic_query(search_input, engine)
         if not apartments:
             raise HTTPException(status_code=404, detail="No apartments found")
-        return [apartment.__dict__ for apartment in apartments]
+        return [convert_to_apartment_response(apartment) for apartment in apartments]
     except Exception as e:
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

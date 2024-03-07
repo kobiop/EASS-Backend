@@ -5,3 +5,4 @@ pydantic
 mysqlclient
 mysql
 mysql-connector-python
+python-dotenv

@@ -6,6 +6,7 @@ from sqlalchemy import Column, Integer, Float, String, Text, DateTime
 from sqlalchemy.sql import func
 
 Base = declarative_base()
+
 class Apartment(Base):
     __tablename__ = 'apartments'
     id = Column(Integer, primary_key=True)
@@ -23,7 +24,8 @@ class Apartment(Base):
     img_link = Column(Text)
     created_at = Column(DateTime, default=func.now())
 
-class ApartmentAdd(BaseModel):
+class ApartmentInformation(BaseModel):
+    address: str
     price: float
     year_built: int
     sqft: int
@@ -32,18 +34,15 @@ class ApartmentAdd(BaseModel):
     price_per_sqft: float
     property_type: str
     garage: int
-    HOA_fees: float
-    address: str
+    HOA_fees: int
     sqft_lot: int
-    img_link: str
+
 
 class PropertyType(str, Enum):
     single_family = "Single family"
-    multi_family = "Multi-Family"
+    multi_family = "Townhome"
     condo = "condo"
-    land = "Land"
-    apartment = "apartment"
-    house = "house"
+    land = "Multi-Family"
 
 class ApartmentSearchForm(BaseModel):
     min_price: float = None
@@ -61,3 +60,19 @@ class ApartmentSearchForm(BaseModel):
     max_HOA_fees: float = None  
     address: str = None
     min_sqft_lot: int = None
+    
+
+def convert_to_apartment_response(apartment: Apartment) -> ApartmentInformation:
+    return ApartmentInformation(
+        price=apartment.price,
+        year_built=apartment.year_built,
+        sqft=apartment.sqft,
+        beds=apartment.beds,
+        bathrooms=apartment.bathrooms,
+        price_per_sqft=apartment.price_per_sqft if apartment.price_per_sqft is not None else 0.0,
+        property_type=apartment.property_type,
+        garage=apartment.garage,
+        HOA_fees=apartment.HOA_fees,
+        address=apartment.address,
+        sqft_lot=apartment.sqft_lot,
+    )
