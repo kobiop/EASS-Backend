@@ -74,7 +74,7 @@ To run tests for the application, follow these steps:
 
 You can watch a quick introduction to Listfy by clicking on the image below:
 
-[![Watch the video](https://youtu.be/SWjToOBqwAU)
+https://www.youtube.com/watch?v=SWjToOBqwAU
 
 Replace `YOUR_VIDEO_ID_HERE` with the actual ID of your video from the video hosting platform.
 
