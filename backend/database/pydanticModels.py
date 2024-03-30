@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from enum import Enum
 from typing import Set, Optional
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base  
 from sqlalchemy import Column, Integer, Float, String, Text, DateTime
 from sqlalchemy.sql import func
 
