@@ -23,7 +23,6 @@ def connect_db():
     return engine
 
 def generate_dynamic_query(searchfrom, engine):
-    print("this is the searchfrom ,",searchfrom)
     Session = sessionmaker(bind=engine)
     with Session() as session:
         base_query = session.query(Apartment).filter()
@@ -128,7 +127,6 @@ def get_user_by_email(email: str):
                 }
             return None
     except Exception as e:
-        print(f"Error getting user by email: {e}")
         return None
     
 
