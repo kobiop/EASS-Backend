@@ -72,11 +72,9 @@ To run tests for the application, follow these steps:
 
 ## Adding a Video Introduction
 
-You can watch a quick introduction to Listfy by clicking on the image below:
+You can watch a quick introduction to Listfy by clicking on the video below:
 
 https://www.youtube.com/watch?v=SWjToOBqwAU
-
-Replace `YOUR_VIDEO_ID_HERE` with the actual ID of your video from the video hosting platform.
 
 ## Contributing
 
