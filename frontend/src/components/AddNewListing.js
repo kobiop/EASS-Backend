@@ -6,22 +6,22 @@ import { useNavigate } from 'react-router-dom';
 const NewListingForm = () => {
     const [newListing, setNewListing] = useState({
         address: '',
-        price: 0,
-        year_built: 0,
-        sqft: 0,
-        beds: 0,
-        bathrooms: 0,
+        price: '',
+        year_built: '',
+        sqft: '',
+        beds: '',
+        bathrooms: '',
         price_per_sqft: null,
         property_type: '',
-        garage: 0,
-        HOA_fees: 0,
-        sqft_lot: 0,
+        garage: '',
+        HOA_fees: '',
+        sqft_lot: '',
     });
     const navigate = useNavigate();
 
     const calculatePricePerSqft = () => {
         const { price, sqft } = newListing;
-        if (sqft !== 0) {
+        if (sqft !== '' && parseFloat(sqft) > 0) {
             return parseFloat(price) / parseFloat(sqft);
         }
         return null;
@@ -41,6 +41,13 @@ const NewListingForm = () => {
             ...prevListing,
             property_type: prevListing.property_type === selectedPropertyType ? '' : selectedPropertyType,
         }));
+    };
+
+    const handleChange = (e, field) => {
+        const value = e.target.value;
+        if (!isNaN(value) && parseFloat(value) >= 0) {
+            setNewListing({ ...newListing, [field]: value });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -110,7 +117,8 @@ const NewListingForm = () => {
                             fullWidth
                             type="number"
                             value={newListing.year_built}
-                            onChange={(e) => setNewListing({ ...newListing, year_built: e.target.value })}
+                            inputProps={{ min: 1800, max: new Date().getFullYear() }}
+                            onChange={(e) => handleChange(e, 'year_built')}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -119,7 +127,8 @@ const NewListingForm = () => {
                             fullWidth
                             type="number"
                             value={newListing.sqft}
-                            onChange={(e) => setNewListing({ ...newListing, sqft: e.target.value })}
+                            inputProps={{ min: 0, max: 1000000 }} // Adjust max value as needed
+                            onChange={(e) => handleChange(e, 'sqft')}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -128,7 +137,8 @@ const NewListingForm = () => {
                             fullWidth
                             type="number"
                             value={newListing.beds}
-                            onChange={(e) => setNewListing({ ...newListing, beds: e.target.value })}
+                            inputProps={{ min: 0, max: 20 }} // Adjust max value as needed
+                            onChange={(e) => handleChange(e, 'beds')}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -137,7 +147,8 @@ const NewListingForm = () => {
                             fullWidth
                             type="number"
                             value={newListing.bathrooms}
-                            onChange={(e) => setNewListing({ ...newListing, bathrooms: e.target.value })}
+                            inputProps={{ min: 0, max: 20 }} // Adjust max value as needed
+                            onChange={(e) => handleChange(e, 'bathrooms')}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -146,7 +157,8 @@ const NewListingForm = () => {
                             fullWidth
                             type="number"
                             value={newListing.price}
-                            onChange={(e) => setNewListing({ ...newListing, price: e.target.value })}
+                            inputProps={{ min: 0, max: 1000000000 }} // Adjust max value as needed
+                            onChange={(e) => handleChange(e, 'price')}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -155,7 +167,8 @@ const NewListingForm = () => {
                             fullWidth
                             type="number"
                             value={newListing.garage}
-                            onChange={(e) => setNewListing({ ...newListing, garage: e.target.value })}
+                            inputProps={{ min: 0, max: 10 }} // Adjust max value as needed
+                            onChange={(e) => handleChange(e, 'garage')}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -164,7 +177,8 @@ const NewListingForm = () => {
                             fullWidth
                             type="number"
                             value={newListing.HOA_fees}
-                            onChange={(e) => setNewListing({ ...newListing, HOA_fees: e.target.value })}
+                            inputProps={{ min: 0, max: 5000 }} // Adjust max value as needed
+                            onChange={(e) => handleChange(e, 'HOA_fees')}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -173,7 +187,8 @@ const NewListingForm = () => {
                             fullWidth
                             type="number"
                             value={newListing.sqft_lot}
-                            onChange={(e) => setNewListing({ ...newListing, sqft_lot: e.target.value })}
+                            inputProps={{ min: 0, max: 1000000 }} // Adjust max value as needed
+                            onChange={(e) => handleChange(e, 'sqft_lot')}
                         />
                     </Grid>
                     <Grid item xs={12}>
