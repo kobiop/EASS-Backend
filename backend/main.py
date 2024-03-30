@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from database.db import get_all_apartments, filter_apartments_by_user, insert_new_apartment
 from database.pydanticModels import ApartmentInformation, ApartmentSearchForm
+from auth import auth_router
 
 app = FastAPI()
 
@@ -45,3 +46,5 @@ async def add_new_apartment(new_apartment: ApartmentInformation):
         return new_listing
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+    
+app.include_router(auth_router, prefix="/auth")

@@ -5,7 +5,7 @@ import ListingCard from './ListingCard';
 
 const PaginatedListings = ({ listings, totalPages, currentPage, handlePageChange }) => {
     return (
-        <div>
+        <>
             <Grid container spacing={2}>
                 {listings.map((listing) => (
                     <Grid key={listing.id} item xs={4}>
@@ -22,7 +22,7 @@ const PaginatedListings = ({ listings, totalPages, currentPage, handlePageChange
                     style={{ marginTop: '20px' }}
                 />
             </Box>
-        </div>
+        </>
     );
 };
 

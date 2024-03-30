@@ -1,22 +1,23 @@
 from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .pydanticModels import Apartment,convert_to_apartment_response
+from sqlalchemy.exc import IntegrityError
+from .pydanticModels import Apartment,User,convert_to_apartment_response
 import logging
 from dotenv import load_dotenv
 import os
+import jwt
+from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger(__name__)
-
+  
 load_dotenv()
-
 
 def connect_db():
     DB_USER = os.getenv("DB_USER")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
     DB_HOST = os.getenv("DB_HOST")
     DB_NAME = os.getenv("DB_NAME")
-
     DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
     engine = create_engine(DATABASE_URL, pool_pre_ping=True)
     return engine
@@ -56,7 +57,6 @@ def generate_dynamic_query(searchfrom, engine):
         if searchfrom['address']:
             base_query = base_query.filter(Apartment.address.like(f"%{searchfrom['address']}%"))
         if searchfrom['min_sqft_lot']:
-            print("enter min sqft lot")
             base_query = base_query.filter(Apartment.sqft_lot >= searchfrom['min_sqft_lot'])
         apartments = base_query.all()
 
@@ -99,15 +99,47 @@ def insert_new_apartment(new_apartments):
         logger.error(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to insert new apartment")
 
-def bring_last():
-    engine = connect_db()
+def insert_new_user(new_user_data):
     try:
+        engine = connect_db()
         Session = sessionmaker(bind=engine)
         with Session() as session:
-            last_apartment = session.query(Apartment).order_by(Apartment.id.desc()).first()
-        if not last_apartment:
-            raise HTTPException(status_code=404, detail="No apartments found")
-        return last_apartment
-    except Exception as e:
+            existing_user = session.query(User).filter(User.email == new_user_data["email"]).first()
+            if existing_user:
+                raise HTTPException(status_code=400, detail="Email already exists")
+            new_user_instance = User(**new_user_data)
+            session.add(new_user_instance)
+            session.commit()
+        return new_user_data
+    except IntegrityError as e:
         logger.error(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail="Failed to insert new user")
+    
+def get_user_by_email(email: str):
+    try:
+        engine = connect_db()
+        Session = sessionmaker(bind=engine)
+        with Session() as session:
+            user = session.query(User).filter(User.email == email).first()
+            if user:
+                return {
+                    "email": user.email,
+                    "password": user.password
+                }
+            return None
+    except Exception as e:
+        print(f"Error getting user by email: {e}")
+        return None
+    
+
+SECRET_KEY = "MySecret"
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
+    return encoded_jwt

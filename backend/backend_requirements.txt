@@ -6,3 +6,8 @@ mysqlclient
 mysql
 mysql-connector-python
 python-dotenv
+pytest
+httpx
+passlib[bcrypt]
+pydantic[email]
+PyJWT

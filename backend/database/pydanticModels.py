@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from enum import Enum
 from typing import Set, Optional
 from sqlalchemy.ext.declarative import declarative_base
@@ -6,6 +6,14 @@ from sqlalchemy import Column, Integer, Float, String, Text, DateTime
 from sqlalchemy.sql import func
 
 Base = declarative_base()
+
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String)
+    password = Column(String)
 
 class Apartment(Base):
     __tablename__ = 'apartments'
@@ -37,6 +45,11 @@ class ApartmentInformation(BaseModel):
     HOA_fees: int
     sqft_lot: int
 
+class SignUpForm(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    password: str
 
 class PropertyType(str, Enum):
     single_family = "Single family"
@@ -61,6 +74,19 @@ class ApartmentSearchForm(BaseModel):
     address: str = None
     min_sqft_lot: int = None
     
+class SignUpForm(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    password: str
+
+class SignInRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
 
 def convert_to_apartment_response(apartment: Apartment) -> ApartmentInformation:
     return ApartmentInformation(
