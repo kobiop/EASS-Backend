@@ -36,9 +36,9 @@ const Navbar = () => {
             <StyleToolbar>
                 <LeftLinks>
                     <Typography variant="h6">
-                        <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <Typography variant="h6" style={{ marginRight: '20px' }}>
                             <LocationCityIcon /> Listify
-                        </Link>
+                        </Typography>
                     </Typography>
                     <Box sx={{ display: 'flex', gap: '20px', alignItems: 'center', marginLeft: '20px' }}>
                         {isAuthenticated && (
