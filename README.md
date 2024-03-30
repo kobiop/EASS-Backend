@@ -42,6 +42,8 @@ Before you begin, ensure you have the following installed on your system:
     docker-compose up --build
     ```
 
+    **Note:** If you plan to use MySQL, please not you may need to update these environment variables in your `docker-compose.yml` file if you intend to use MySQL with specific credentials.
+
 3. Enjoy! 🏠
 
 The Listfy application is now running and ready for use at [http://localhost:3000](http://localhost:3000).
